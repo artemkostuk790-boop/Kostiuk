@@ -1,0 +1,1564 @@
+<!DOCTYPE html>
+
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kostiuk AI</title>
+
+<style>
+*{box-sizing:border-box}
+
+:root{
+    --bg:#08090c;
+    --panel:#101218;
+    --panel2:#151821;
+    --line:#252a35;
+    --text:#f4f6fa;
+    --muted:#8f96a5;
+    --accent:#8b5cf6;
+    --accent2:#a78bfa;
+    --danger:#ef4444;
+}
+
+body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:Arial,Helvetica,sans-serif;
+    overflow:hidden;
+}
+
+button,input,textarea{font:inherit}
+button{color:inherit}
+
+.app{
+    display:flex;
+    height:100vh;
+}
+
+.sidebar{
+    width:270px;
+    background:#0d0f14;
+    border-right:1px solid var(--line);
+    padding:16px;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+}
+
+.logo{
+    font-size:22px;
+    font-weight:800;
+    padding:8px 8px 16px;
+}
+
+.logo span{color:var(--accent2)}
+
+.newchat,.sidebtn{
+    border:1px solid var(--line);
+    background:var(--panel);
+    border-radius:12px;
+    padding:11px 13px;
+    cursor:pointer;
+    text-align:left;
+}
+
+.newchat:hover,.sidebtn:hover{
+    background:var(--panel2);
+    border-color:#383e4c;
+}
+
+.sidebtn{font-size:14px}
+
+.history{
+    flex:1;
+    overflow:auto;
+    padding-top:4px;
+}
+
+.history-title{
+    font-size:11px;
+    color:var(--muted);
+    padding:8px;
+}
+
+.history-item{
+    padding:9px 10px;
+    border-radius:9px;
+    color:#cfd3dc;
+    cursor:pointer;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+.history-item:hover{background:#171a22}
+
+.mini-profile{
+    border-top:1px solid var(--line);
+    padding-top:12px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    cursor:pointer;
+}
+
+.avatar{
+    width:36px;
+    height:36px;
+    border-radius:50%;
+    background:linear-gradient(135deg,#7c3aed,#2563eb);
+    display:grid;
+    place-items:center;
+    font-weight:800;
+}
+
+.mini-name{
+    font-weight:700;
+    font-size:13px;
+}
+
+.mini-lvl{
+    font-size:11px;
+    color:var(--muted);
+}
+
+.main{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    min-width:0;
+}
+
+.topbar{
+    height:64px;
+    border-bottom:1px solid var(--line);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 20px;
+    background:#0b0d12;
+}
+
+.brand{font-weight:800}
+
+.status{
+    font-size:12px;
+    color:#6ee7b7;
+    margin-left:8px;
+}
+
+.top-right{
+    display:flex;
+    align-items:center;
+    gap:14px;
+}
+
+.level{
+    font-size:13px;
+    color:#cbd0da;
+}
+
+.xpwrap{width:145px}
+
+.xptext{
+    font-size:10px;
+    color:var(--muted);
+    margin-bottom:4px;
+}
+
+.xpbar{
+    height:6px;
+    background:#242833;
+    border-radius:10px;
+    overflow:hidden;
+}
+
+.xpfill{
+    height:100%;
+    width:0;
+    background:linear-gradient(90deg,#7c3aed,#a78bfa);
+    transition:.25s;
+}
+
+.power{
+    border:1px solid #3a2a2a;
+    background:#171116;
+    border-radius:10px;
+    padding:8px 11px;
+    cursor:pointer;
+    font-weight:800;
+}
+
+.power.ready{
+    border-color:var(--danger);
+    box-shadow:0 0 15px #ef444455;
+    color:#ff6969;
+}
+
+.power.active{
+    background:#5f1111;
+    border-color:#ff4444;
+    box-shadow:0 0 22px #ff000077;
+}
+
+.page{
+    display:none;
+    flex:1;
+    min-height:0;
+}
+
+.page.active{display:flex}
+
+.chat-page{flex-direction:column}
+
+.chat-scroll{
+    flex:1;
+    overflow:auto;
+    padding:30px 7%;
+    scroll-behavior:smooth;
+}
+
+.welcome{
+    height:100%;
+    display:grid;
+    place-items:center;
+    text-align:center;
+}
+
+.welcome-inner{max-width:700px}
+
+.welcome h1{
+    font-size:38px;
+    margin:0 0 10px;
+}
+
+.welcome p{
+    color:var(--muted);
+    font-size:16px;
+}
+
+.messages{
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+    max-width:900px;
+    margin:auto;
+}
+
+.msg{
+    display:flex;
+    gap:10px;
+    align-items:flex-start;
+}
+
+.msg.user{justify-content:flex-end}
+
+.bubble{
+    max-width:78%;
+    padding:12px 15px;
+    border-radius:15px;
+    background:#141821;
+    line-height:1.5;
+    white-space:pre-wrap;
+    overflow-wrap:anywhere;
+}
+
+.user .bubble{background:#5b36a8}
+
+.msg img{
+    max-width:320px;
+    max-height:320px;
+    border-radius:12px;
+    display:block;
+    margin-top:8px;
+}
+
+.thinking{opacity:.7}
+
+.composer-wrap{
+    padding:14px 7% 18px;
+    border-top:1px solid var(--line);
+    background:#0b0d12;
+}
+
+.composer{
+    max-width:900px;
+    margin:auto;
+    border:1px solid #303542;
+    background:#11141b;
+    border-radius:17px;
+    padding:10px;
+}
+
+.attachments{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-bottom:5px;
+}
+
+.chip{
+    font-size:12px;
+    background:#1b1f29;
+    border:1px solid #303542;
+    border-radius:8px;
+    padding:6px 8px;
+    cursor:pointer;
+}
+
+.composer-row{
+    display:flex;
+    gap:8px;
+    align-items:flex-end;
+}
+
+textarea{
+    flex:1;
+    resize:none;
+    min-height:44px;
+    max-height:180px;
+    background:transparent;
+    border:0;
+    outline:0;
+    color:var(--text);
+    padding:9px;
+    font-size:15px;
+}
+
+.iconbtn,.sendbtn{
+    width:42px;
+    height:42px;
+    border-radius:12px;
+    border:1px solid var(--line);
+    background:#171a22;
+    cursor:pointer;
+}
+
+.sendbtn{
+    background:#7c3aed;
+    border-color:#8b5cf6;
+    font-weight:900;
+}
+
+.plus-menu{
+    position:absolute;
+    bottom:72px;
+    background:#11141b;
+    border:1px solid var(--line);
+    border-radius:13px;
+    padding:7px;
+    display:none;
+    box-shadow:0 10px 35px #0008;
+    z-index:10;
+}
+
+.plus-menu.open{display:block}
+
+.plus-menu button{
+    display:block;
+    width:190px;
+    border:0;
+    background:transparent;
+    padding:10px;
+    border-radius:8px;
+    text-align:left;
+    cursor:pointer;
+}
+
+.plus-menu button:hover{background:#1b1f29}
+
+.hidden{display:none!important}
+
+.profile-page,.top-page{
+    padding:35px;
+    overflow:auto;
+    display:none;
+    flex-direction:column;
+    align-items:center;
+}
+
+.profile-page.active,.top-page.active{display:flex}
+
+.card{
+    width:min(760px,100%);
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:24px;
+}
+
+.profile-head{
+    display:flex;
+    align-items:center;
+    gap:18px;
+    margin-bottom:25px;
+}
+
+.bigavatar{
+    width:75px;
+    height:75px;
+    border-radius:50%;
+    background:linear-gradient(135deg,#7c3aed,#2563eb);
+    display:grid;
+    place-items:center;
+    font-size:25px;
+    font-weight:900;
+}
+
+.statgrid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:10px;
+    margin-top:20px;
+}
+
+.stat{
+    background:#151821;
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:14px;
+}
+
+.stat b{
+    display:block;
+    font-size:20px;
+    margin-bottom:4px;
+}
+
+.stat span{
+    font-size:11px;
+    color:var(--muted);
+}
+
+.prestige-btn{
+    margin-top:20px;
+    padding:12px 16px;
+    border-radius:11px;
+    border:1px solid #f59e0b;
+    background:#2b2110;
+    cursor:pointer;
+}
+
+.top-list{
+    width:min(760px,100%);
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+}
+
+.top-row{
+    display:grid;
+    grid-template-columns:50px 1fr 120px;
+    align-items:center;
+    background:var(--panel);
+    border:1px solid var(--line);
+    padding:14px;
+    border-radius:12px;
+}
+
+.modal{
+    position:fixed;
+    inset:0;
+    background:#0009;
+    display:none;
+    place-items:center;
+    z-index:20;
+}
+
+.modal.open{display:grid}
+
+.modal-card{
+    width:min(430px,90%);
+    background:#11141b;
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:24px;
+}
+
+.modal-actions{
+    display:flex;
+    justify-content:flex-end;
+    gap:8px;
+    margin-top:20px;
+}
+
+.modal-actions button{
+    padding:9px 13px;
+    border-radius:9px;
+    border:1px solid var(--line);
+    background:#181c25;
+    cursor:pointer;
+}
+
+@media(max-width:800px){
+    .sidebar{width:220px}
+    .top-right .xpwrap{display:none}
+    .chat-scroll,.composer-wrap{
+        padding-left:3%;
+        padding-right:3%;
+    }
+}
+
+@media(max-width:600px){
+    .sidebar{display:none}
+    .bubble{max-width:90%}
+    .statgrid{grid-template-columns:1fr}
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="app">
+
+<aside class="sidebar">
+
+<div class="logo">Kostiuk <span>AI</span></div>
+
+<button class="newchat" onclick="newChat()">＋ Новий чат</button>
+
+<button class="sidebtn" onclick="showPage('top')">🏆 TOP</button>
+
+<div class="history">
+<div class="history-title">ІСТОРІЯ</div>
+<div id="historyList"></div>
+</div>
+
+<div class="mini-profile" onclick="showPage('profile')">
+<div class="avatar" id="miniAvatar">A</div>
+<div>
+<div class="mini-name" id="miniName">ARTEM</div>
+<div class="mini-lvl" id="miniLvl">LVL 1</div>
+</div>
+</div>
+
+</aside>
+
+<main class="main">
+
+<header class="topbar">
+
+<div>
+<span class="brand">Kostiuk AI</span>
+<span class="status">● online</span>
+</div>
+
+<div class="top-right">
+
+<span class="level" id="levelText">LVL 1</span>
+
+<div class="xpwrap">
+<div class="xptext" id="xpText">0 / 118 XP</div>
+<div class="xpbar">
+<div class="xpfill" id="xpFill"></div>
+</div>
+</div>
+
+<button class="power" id="powerBtn" onclick="activatePower()">⚡ POWER</button>
+
+</div>
+
+</header>
+
+<section class="page chat-page active" id="chatPage">
+
+<div class="chat-scroll" id="chatScroll">
+
+<div class="welcome" id="welcome">
+<div class="welcome-inner">
+<h1>Чим допомогти?</h1>
+<p>Kostiuk AI готовий. Пиши, кидай зображення або використовуй голос.</p>
+</div>
+</div>
+
+<div class="messages" id="messages"></div>
+
+</div>
+
+<div class="composer-wrap">
+
+<div class="composer">
+
+<div class="attachments" id="attachments"></div>
+
+<div class="composer-row">
+
+<div style="position:relative">
+
+<button class="iconbtn" onclick="togglePlus()">＋</button>
+
+<div class="plus-menu" id="plusMenu">
+
+<button onclick="pickImage()">🖼️ Зображення</button> <button onclick="pickFile()">📎 Файл</button> <button onclick="voiceInput()">🎙️ Голос</button> <button onclick="generateVideo()">🎬 Відео</button>
+
+</div>
+
+</div>
+
+<textarea id="input" placeholder="Напиши Kostiuk..." rows="1"></textarea>
+
+<button class="sendbtn" onclick="sendMessage()">➤</button>
+
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+<section class="page profile-page" id="profilePage">
+
+<div class="card">
+
+<div class="profile-head">
+
+<div class="bigavatar" id="bigAvatar">A</div>
+
+<div>
+<h2 id="profileName" style="margin:0">ARTEM</h2>
+<div id="profileLevel" style="color:var(--muted);margin-top:5px">
+LVL 1 • ROOKIE
+</div>
+</div>
+
+</div>
+
+<div class="statgrid">
+
+<div class="stat">
+<b id="statXP">0</b>
+<span>TOTAL XP</span>
+</div>
+
+<div class="stat">
+<b id="statMessages">0</b>
+<span>MESSAGES</span>
+</div>
+
+<div class="stat">
+<b id="statPrestige">0</b>
+<span>PRESTIGE</span>
+</div>
+
+</div>
+
+<button class="prestige-btn hidden" id="prestigeBtn" onclick="openPrestige()">
+♛ PRESTIGE
+</button>
+
+</div>
+
+</section>
+
+<section class="page top-page" id="topPage">
+
+<div class="top-list">
+
+<h2 style="margin-top:0">🏆 TOP Kostiuk</h2>
+
+<div class="top-row">
+<b>#1</b>
+<span>ARTEM</span>
+<b id="myTopXP">0 XP</b>
+</div>
+
+<div class="top-row">
+<b>#2</b>
+<span>KostiukUser</span>
+<b>12 450 XP</b>
+</div>
+
+<div class="top-row">
+<b>#3</b>
+<span>CyberPlayer</span>
+<b>9 800 XP</b>
+</div>
+
+<p style="color:var(--muted);font-size:12px">
+Зараз це локальний прототип.
+Справжній спільний TOP з іншими користувачами
+з'явиться після підключення бази даних.
+</p>
+
+</div>
+
+</section>
+
+</main>
+</div>
+
+<input type="file" id="imageInput" accept="image/*" class="hidden">
+<input type="file" id="fileInput" class="hidden">
+
+<div class="modal" id="prestigeModal">
+
+<div class="modal-card">
+
+<h2>PRESTIGE</h2>
+
+<p>
+LVL 100 буде скинуто до LVL 1.
+Total XP та історія повідомлень залишаться.
+Prestige +1.
+</p>
+
+<div class="modal-actions">
+
+<button onclick="closePrestige()">Скасувати</button> <button onclick="confirmPrestige()">Підтвердити</button>
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+const API_URL = "https://kostiuk.onrender.com";
+
+let data =
+    JSON.parse(localStorage.getItem("kostiuk_data") || "null") ||
+    {
+        name:"ARTEM",
+        level:1,
+        currentXP:0,
+        totalXP:0,
+        messages:0,
+        prestige:0,
+        power:false,
+        powerUntil:0,
+        chats:[]
+    };
+
+let powerCharge =
+    Number(localStorage.getItem("kostiuk_power") || 0);
+
+let currentChat = [];
+let pendingImage = null;
+let pendingFile = null;
+let isSending = false;
+
+function saveData(){
+
+    localStorage.setItem(
+        "kostiuk_data",
+        JSON.stringify(data)
+    );
+
+    localStorage.setItem(
+        "kostiuk_power",
+        String(powerCharge)
+    );
+}
+
+function xpRequired(level){
+
+    return Math.floor(
+        100 + Math.pow(level,1.55) * 18
+    );
+}
+
+function levelTitle(level){
+
+    if(level >= 100) return "KOSTIUK";
+    if(level >= 75) return "OVERDRIVE";
+    if(level >= 50) return "TITAN";
+    if(level >= 35) return "CYBER";
+    if(level >= 20) return "MASTER";
+    if(level >= 10) return "PRO";
+    if(level >= 5) return "USER";
+
+    return "ROOKIE";
+}
+
+function addMessageXP(){
+
+    data.currentXP += 5;
+    data.totalXP += 5;
+    data.messages++;
+
+    while(
+        data.currentXP >= xpRequired(data.level) &&
+        data.level < 100
+    ){
+
+        data.currentXP -= xpRequired(data.level);
+        data.level++;
+
+    }
+
+    saveData();
+    updateUI();
+}
+
+function addPowerCharge(){
+
+    powerCharge = Math.min(100,powerCharge + 5);
+
+    saveData();
+    updateUI();
+}
+
+function updateUI(){
+
+    const req = xpRequired(data.level);
+
+    const percent = Math.min(
+        100,
+        (data.currentXP / req) * 100
+    );
+
+    document.getElementById("levelText").textContent =
+        "LVL " + data.level;
+
+    document.getElementById("xpText").textContent =
+        `${data.currentXP} / ${req} XP`;
+
+    document.getElementById("xpFill").style.width =
+        percent + "%";
+
+    document.getElementById("miniName").textContent =
+        data.name;
+
+    document.getElementById("miniLvl").textContent =
+        "LVL " + data.level;
+
+    document.getElementById("miniAvatar").textContent =
+        data.name.charAt(0).toUpperCase();
+
+    document.getElementById("profileName").textContent =
+        data.name;
+
+    document.getElementById("profileLevel").textContent =
+        `LVL ${data.level} • ${levelTitle(data.level)}`;
+
+    document.getElementById("bigAvatar").textContent =
+        data.name.charAt(0).toUpperCase();
+
+    document.getElementById("statXP").textContent =
+        data.totalXP.toLocaleString("uk-UA");
+
+    document.getElementById("statMessages").textContent =
+        data.messages.toLocaleString("uk-UA");
+
+    document.getElementById("statPrestige").textContent =
+        data.prestige;
+
+    document.getElementById("myTopXP").textContent =
+        data.totalXP.toLocaleString("uk-UA") + " XP";
+
+    document.getElementById("prestigeBtn")
+        .classList.toggle("hidden",data.level < 100);
+
+    const powerBtn =
+        document.getElementById("powerBtn");
+
+    powerBtn.classList.toggle(
+        "ready",
+        powerCharge >= 100 && !data.power
+    );
+
+    powerBtn.classList.toggle(
+        "active",
+        data.power
+    );
+
+    powerBtn.textContent =
+        data.power
+            ? "⚡ POWER ON"
+            : `⚡ POWER ${powerCharge}%`;
+
+    updateHistory();
+}
+
+function activatePower(){
+
+    if(data.power) return;
+    if(powerCharge < 100) return;
+
+    data.power = true;
+    data.powerUntil = Date.now() + 20000;
+
+    powerCharge = 0;
+
+    saveData();
+    updateUI();
+
+    setTimeout(() => {
+
+        data.power = false;
+        data.powerUntil = 0;
+
+        saveData();
+        updateUI();
+
+    },20000);
+}
+
+function showPage(page){
+
+    document
+        .querySelectorAll(".page")
+        .forEach(p => p.classList.remove("active"));
+
+    if(page === "profile"){
+
+        document
+            .getElementById("profilePage")
+            .classList.add("active");
+
+    }else if(page === "top"){
+
+        document
+            .getElementById("topPage")
+            .classList.add("active");
+
+    }else{
+
+        document
+            .getElementById("chatPage")
+            .classList.add("active");
+
+    }
+}
+
+function togglePlus(){
+
+    document
+        .getElementById("plusMenu")
+        .classList.toggle("open");
+}
+
+document.addEventListener("click",e => {
+
+    if(
+        !e.target.closest(".plus-menu") &&
+        !e.target.closest(".iconbtn")
+    ){
+
+        document
+            .getElementById("plusMenu")
+            .classList.remove("open");
+
+    }
+
+});
+
+function pickImage(){
+
+    document
+        .getElementById("imageInput")
+        .click();
+
+    document
+        .getElementById("plusMenu")
+        .classList.remove("open");
+}
+
+function pickFile(){
+
+    document
+        .getElementById("fileInput")
+        .click();
+
+    document
+        .getElementById("plusMenu")
+        .classList.remove("open");
+}
+
+document
+    .getElementById("imageInput")
+    .addEventListener("change",e => {
+
+        const file = e.target.files[0];
+
+        if(!file) return;
+
+        const reader = new FileReader();
+
+        reader.onload = () => {
+
+            pendingImage = {
+                name:file.name,
+                data:reader.result
+            };
+
+            renderAttachments();
+        };
+
+        reader.readAsDataURL(file);
+
+        e.target.value = "";
+    });
+
+document
+    .getElementById("fileInput")
+    .addEventListener("change",async e => {
+
+        const file = e.target.files[0];
+
+        if(!file) return;
+
+        if(file.size > 2 * 1024 * 1024){
+
+            alert("Файл завеликий. Максимум 2 МБ.");
+
+            e.target.value = "";
+
+            return;
+        }
+
+        let text = null;
+
+        if(
+            file.type.startsWith("text/") ||
+            /\.(txt|md|json|csv|js|html|css)$/i.test(file.name)
+        ){
+
+            try{
+                text = await file.text();
+            }catch{}
+        }
+
+        pendingFile = {
+            name:file.name,
+            size:file.size,
+            text:text
+        };
+
+        renderAttachments();
+
+        e.target.value = "";
+    });
+
+function renderAttachments(){
+
+    const box =
+        document.getElementById("attachments");
+
+    box.innerHTML = "";
+
+    if(pendingImage){
+
+        const chip =
+            document.createElement("div");
+
+        chip.className = "chip";
+
+        chip.textContent =
+            "🖼️ " + pendingImage.name + " ×";
+
+        chip.onclick = () => {
+
+            pendingImage = null;
+            renderAttachments();
+
+        };
+
+        box.appendChild(chip);
+    }
+
+    if(pendingFile){
+
+        const chip =
+            document.createElement("div");
+
+        chip.className = "chip";
+
+        chip.textContent =
+            "📎 " + pendingFile.name + " ×";
+
+        chip.onclick = () => {
+
+            pendingFile = null;
+            renderAttachments();
+
+        };
+
+        box.appendChild(chip);
+    }
+}
+
+function escapeHTML(s){
+
+    return String(s).replace(
+        /[&<>"']/g,
+        c => ({
+            "&":"&amp;",
+            "<":"&lt;",
+            ">":"&gt;",
+            '"':"&quot;",
+            "'":"&#039;"
+        }[c])
+    );
+}
+
+function addMessage(role,text,image){
+
+    const wrap =
+        document.createElement("div");
+
+    wrap.className =
+        "msg " + role;
+
+    const bubble =
+        document.createElement("div");
+
+    bubble.className = "bubble";
+
+    if(text){
+        bubble.innerHTML = escapeHTML(text);
+    }
+
+    if(image){
+
+        const img =
+            document.createElement("img");
+
+        img.src = image;
+
+        bubble.appendChild(img);
+    }
+
+    wrap.appendChild(bubble);
+
+    document
+        .getElementById("messages")
+        .appendChild(wrap);
+
+    document
+        .getElementById("welcome")
+        .classList.add("hidden");
+
+    scrollBottom();
+
+    return wrap;
+}
+
+function addThinking(){
+
+    const wrap =
+        document.createElement("div");
+
+    wrap.className = "msg assistant";
+    wrap.id = "thinking";
+
+    const bubble =
+        document.createElement("div");
+
+    bubble.className = "bubble thinking";
+    bubble.textContent = "Kostiuk думає...";
+
+    wrap.appendChild(bubble);
+
+    document
+        .getElementById("messages")
+        .appendChild(wrap);
+
+    scrollBottom();
+}
+
+function scrollBottom(){
+
+    const s =
+        document.getElementById("chatScroll");
+
+    setTimeout(
+        () => {
+            s.scrollTop = s.scrollHeight;
+        },
+        20
+    );
+}
+
+function buildHistoryForAPI(){
+
+    return currentChat
+        .slice(-20)
+        .map(m => ({
+            role:m.role,
+            content:m.content
+        }));
+}
+
+async function sendMessage(){
+
+    if(isSending) return;
+
+    const input =
+        document.getElementById("input");
+
+    let text = input.value.trim();
+
+    if(pendingFile && pendingFile.text){
+
+        text +=
+            (text ? "\n\n" : "") +
+            `Вміст файлу "${pendingFile.name}":\n` +
+            pendingFile.text;
+
+    }else if(pendingFile){
+
+        text +=
+            (text ? "\n\n" : "") +
+            `Користувач прикріпив файл: ${pendingFile.name}.`;
+    }
+
+    if(!text && !pendingImage) return;
+
+    isSending = true;
+
+    const sentImage =
+        pendingImage ? pendingImage.data : null;
+
+    const usePower = data.power;
+
+    const visibleText =
+        text || "Проаналізуй це зображення.";
+
+    addMessage(
+        "user",
+        visibleText,
+        sentImage
+    );
+
+    currentChat.push({
+        role:"user",
+        content:visibleText
+    });
+
+    input.value = "";
+
+    pendingImage = null;
+    pendingFile = null;
+
+    renderAttachments();
+
+    addMessageXP();
+    addPowerCharge();
+
+    addThinking();
+
+    try{
+
+        const response =
+            await fetch(
+                API_URL + "/chat",
+                {
+                    method:"POST",
+
+                    headers:{
+                        "Content-Type":"application/json"
+                    },
+
+                    body:JSON.stringify({
+
+                        message:text,
+
+                        image:sentImage,
+
+                        history:
+                            buildHistoryForAPI()
+                                .slice(0,-1)
+
+                    })
+                }
+            );
+
+        const result =
+            await response.json();
+
+        document
+            .getElementById("thinking")
+            ?.remove();
+
+        if(!response.ok){
+
+            throw new Error(
+                result.error || "Помилка сервера"
+            );
+        }
+
+        let reply =
+            result.reply || "Порожня відповідь.";
+
+        if(usePower){
+
+            reply =
+                "*ЄБАААА ПОТУЖНООООООО*\n\n" +
+                reply;
+        }
+
+        addMessage(
+            "assistant",
+            reply
+        );
+
+        currentChat.push({
+            role:"assistant",
+            content:reply
+        });
+
+        saveCurrentChat();
+
+    }catch(error){
+
+        document
+            .getElementById("thinking")
+            ?.remove();
+
+        addMessage(
+            "assistant",
+            "❌ Не вдалося зв'язатися з Kostiuk backend.\n\n" +
+            "Перевір підключення до онлайн-сервера."
+        );
+
+        console.error(error);
+
+    }finally{
+
+        isSending = false;
+    }
+}
+
+function saveCurrentChat(){
+
+    if(!currentChat.length) return;
+
+    data.chats = data.chats || [];
+
+    if(data.chats.length === 0){
+
+        data.chats.push({
+
+            title:
+                currentChat[0]
+                    ?.content
+                    ?.slice(0,45)
+                || "Новий чат",
+
+            messages:currentChat
+        });
+
+    }else{
+
+        data.chats[0].messages =
+            currentChat;
+    }
+
+    saveData();
+    updateHistory();
+}
+
+function updateHistory(){
+
+    const box =
+        document.getElementById("historyList");
+
+    box.innerHTML = "";
+
+    (data.chats || [])
+        .slice(-15)
+        .reverse()
+        .forEach(chat => {
+
+            const item =
+                document.createElement("div");
+
+            item.className =
+                "history-item";
+
+            item.textContent =
+                chat.title || "Новий чат";
+
+            item.onclick =
+                () => loadChat(chat);
+
+            box.appendChild(item);
+        });
+}
+
+function loadChat(chat){
+
+    showPage("chat");
+
+    currentChat =
+        Array.isArray(chat.messages)
+            ? [...chat.messages]
+            : [];
+
+    document
+        .getElementById("messages")
+        .innerHTML = "";
+
+    document
+        .getElementById("welcome")
+        .classList.toggle(
+            "hidden",
+            currentChat.length > 0
+        );
+
+    currentChat.forEach(
+        m => addMessage(
+            m.role,
+            m.content
+        )
+    );
+}
+
+function newChat(){
+
+    currentChat = [];
+    pendingImage = null;
+    pendingFile = null;
+
+    document
+        .getElementById("messages")
+        .innerHTML = "";
+
+    document
+        .getElementById("welcome")
+        .classList.remove("hidden");
+
+    document
+        .getElementById("input")
+        .value = "";
+
+    renderAttachments();
+
+    showPage("chat");
+}
+
+function voiceInput(){
+
+    document
+        .getElementById("plusMenu")
+        .classList.remove("open");
+
+    const SpeechRecognition =
+        window.SpeechRecognition ||
+        window.webkitSpeechRecognition;
+
+    if(!SpeechRecognition){
+
+        alert(
+            "Цей браузер не підтримує голосовий ввід. Спробуй Chrome."
+        );
+
+        return;
+    }
+
+    const recognition =
+        new SpeechRecognition();
+
+    recognition.lang = "uk-UA";
+    recognition.interimResults = false;
+    recognition.continuous = false;
+
+    recognition.onstart = () => {
+
+        document
+            .getElementById("input")
+            .placeholder = "Слухаю...";
+    };
+
+    recognition.onend = () => {
+
+        document
+            .getElementById("input")
+            .placeholder = "Напиши Kostiuk...";
+    };
+
+    recognition.onresult = e => {
+
+        document
+            .getElementById("input")
+            .value =
+            e.results[0][0].transcript;
+    };
+
+    recognition.start();
+}
+
+function generateVideo(){
+
+    document
+        .getElementById("plusMenu")
+        .classList.remove("open");
+
+    alert(
+        "🎬 Відеогенерація ще не підключена."
+    );
+}
+
+function openPrestige(){
+
+    if(data.level >= 100){
+
+        document
+            .getElementById("prestigeModal")
+            .classList.add("open");
+    }
+}
+
+function closePrestige(){
+
+    document
+        .getElementById("prestigeModal")
+        .classList.remove("open");
+}
+
+function confirmPrestige(){
+
+    if(data.level < 100) return;
+
+    data.level = 1;
+    data.currentXP = 0;
+    data.prestige++;
+    data.power = false;
+    data.powerUntil = 0;
+
+    powerCharge = 0;
+
+    saveData();
+    updateUI();
+    closePrestige();
+}
+
+document
+    .getElementById("input")
+    .addEventListener("keydown",e => {
+
+        if(
+            e.key === "Enter" &&
+            !e.shiftKey
+        ){
+
+            e.preventDefault();
+            sendMessage();
+        }
+    });
+
+document
+    .getElementById("input")
+    .addEventListener("input",function(){
+
+        this.style.height = "auto";
+
+        this.style.height =
+            Math.min(
+                this.scrollHeight,
+                180
+            ) + "px";
+    });
+
+updateUI();
+
+</script>
+
+</body>
+</html>

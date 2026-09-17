@@ -1,13 +1,15 @@
 require("dotenv").config();
 
 const http = require("http");
+const fs = require("fs");
+const path = require("path");
 const OpenAI = require("openai");
 
 const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 });
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 const KOSTIUK_INSTRUCTIONS = `
 Ти — Kostiuk AI, дружній сучасний AI-асистент.
@@ -49,6 +51,7 @@ function readBody(req) {
 
 const server = http.createServer(async (req, res) => {
 
+  // CORS
   if (req.method === "OPTIONS") {
     res.writeHead(204, {
       "Access-Control-Allow-Origin": "*",
@@ -60,16 +63,44 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  // Головна сторінка Kostiuk
   if (req.method === "GET" && req.url === "/") {
-    sendJson(res, 200, {
-      ok: true,
-      name: "Kostiuk AI backend",
-      endpoint: "POST /chat"
+    const filePath = path.join(__dirname, "kostiuk.html");
+
+    fs.readFile(filePath, (err, data) => {
+      if (err) {
+        console.error("HTML error:", err);
+
+        sendJson(res, 500, {
+          error: "Не вдалося відкрити Kostiuk"
+        });
+
+        return;
+      }
+
+      res.writeHead(200, {
+        "Content-Type": "text/html; charset=utf-8",
+        "Cache-Control": "no-cache"
+      });
+
+      res.end(data);
     });
 
     return;
   }
 
+  // Перевірка сервера
+  if (req.method === "GET" && req.url === "/api/status") {
+    sendJson(res, 200, {
+      ok: true,
+      name: "Kostiuk AI",
+      status: "online"
+    });
+
+    return;
+  }
+
+  // AI CHAT
   if (req.method === "POST" && req.url === "/chat") {
 
     try {
@@ -95,11 +126,13 @@ const server = http.createServer(async (req, res) => {
         sendJson(res, 400, {
           error: "Порожнє повідомлення"
         });
+
         return;
       }
 
-      let input = [];
+      const input = [];
 
+      // Історія
       for (const item of history) {
         if (
           !item ||
@@ -115,7 +148,9 @@ const server = http.createServer(async (req, res) => {
         });
       }
 
+      // Поточне повідомлення
       if (message && image) {
+
         input.push({
           role: "user",
           content: [
@@ -129,7 +164,9 @@ const server = http.createServer(async (req, res) => {
             }
           ]
         });
+
       } else if (image) {
+
         input.push({
           role: "user",
           content: [
@@ -139,13 +176,16 @@ const server = http.createServer(async (req, res) => {
             }
           ]
         });
+
       } else {
+
         input.push({
           role: "user",
           content: message
         });
       }
 
+      // OpenAI
       const response = await client.responses.create({
         model: "gpt-5.6-luna",
         instructions: KOSTIUK_INSTRUCTIONS,
@@ -171,6 +211,7 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  // 404
   sendJson(res, 404, {
     error: "Not found"
   });
@@ -178,5 +219,5 @@ const server = http.createServer(async (req, res) => {
 
 server.listen(PORT, () => {
   console.log("🔥 Kostiuk AI backend запущений!");
-  console.log("🌐 http://localhost:" + PORT);
+  console.log("🌐 Port:", PORT);
 });
