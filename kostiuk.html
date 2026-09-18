@@ -1,13 +1,20 @@
-```html
 <!DOCTYPE html>
 <html lang="uk">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#08090c">
 <title>Kostiuk AI</title>
 
 <style>
 *{box-sizing:border-box}
+
+html{
+    width:100%;
+    height:100%;
+    margin:0;
+    padding:0;
+}
 
 :root{
     --bg:#08090c;
@@ -22,57 +29,87 @@
 }
 
 body{
+    width:100%;
+    height:100%;
     margin:0;
+    padding:0;
     background:var(--bg);
     color:var(--text);
     font-family:Arial,Helvetica,sans-serif;
     overflow:hidden;
+    overscroll-behavior:none;
 }
 
-button,input,textarea{font:inherit}
-button{color:inherit}
+button,input,textarea{
+    font:inherit;
+}
+
+button{
+    color:inherit;
+    -webkit-tap-highlight-color:transparent;
+    touch-action:manipulation;
+}
 
 .app{
     display:flex;
+    width:100%;
     height:100vh;
+    height:100dvh;
+    min-height:0;
 }
+
+/* =========================
+   SIDEBAR
+   ========================= */
 
 .sidebar{
     width:270px;
+    min-width:270px;
+    height:100%;
     background:#0d0f14;
     border-right:1px solid var(--line);
     padding:16px;
     display:flex;
     flex-direction:column;
     gap:12px;
+    overflow:hidden;
 }
 
 .logo{
     font-size:22px;
     font-weight:800;
     padding:8px 8px 16px;
+    flex-shrink:0;
 }
 
-.logo span{color:var(--accent2)}
+.logo span{
+    color:var(--accent2);
+}
 
-.newchat,.sidebtn{
+.newchat,
+.sidebtn{
     border:1px solid var(--line);
     background:var(--panel);
     border-radius:12px;
     padding:11px 13px;
     cursor:pointer;
     text-align:left;
+    flex-shrink:0;
 }
 
-.newchat:hover,.sidebtn:hover{
+.newchat:hover,
+.sidebtn:hover{
     background:var(--panel2);
     border-color:#383e4c;
 }
 
-.sidebtn{font-size:14px}
+.sidebtn{
+    font-size:14px;
+}
 
 .history{
     flex:1;
+    min-height:0;
     overflow:auto;
     padding-top:4px;
 }
@@ -93,7 +130,9 @@ button{color:inherit}
     text-overflow:ellipsis;
 }
 
-.history-item:hover{background:#171a22}
+.history-item:hover{
+    background:#171a22;
+}
 
 .mini-profile{
     border-top:1px solid var(--line);
@@ -102,11 +141,13 @@ button{color:inherit}
     align-items:center;
     gap:10px;
     cursor:pointer;
+    flex-shrink:0;
 }
 
 .avatar{
     width:36px;
     height:36px;
+    flex:0 0 36px;
     border-radius:50%;
     background:linear-gradient(135deg,#7c3aed,#2563eb);
     display:grid;
@@ -124,24 +165,36 @@ button{color:inherit}
     color:var(--muted);
 }
 
+/* =========================
+   MAIN
+   ========================= */
+
 .main{
     flex:1;
+    min-width:0;
+    min-height:0;
     display:flex;
     flex-direction:column;
-    min-width:0;
+    position:relative;
 }
 
 .topbar{
     height:64px;
+    min-height:64px;
     border-bottom:1px solid var(--line);
     display:flex;
     align-items:center;
     justify-content:space-between;
+    gap:12px;
     padding:0 20px;
     background:#0b0d12;
+    flex-shrink:0;
+    z-index:20;
 }
 
-.brand{font-weight:800}
+.brand{
+    font-weight:800;
+}
 
 .status{
     font-size:12px;
@@ -153,14 +206,19 @@ button{color:inherit}
     display:flex;
     align-items:center;
     gap:14px;
+    min-width:0;
 }
 
 .level{
     font-size:13px;
     color:#cbd0da;
+    white-space:nowrap;
 }
 
-.xpwrap{width:145px}
+.xpwrap{
+    width:145px;
+    flex-shrink:0;
+}
 
 .xptext{
     font-size:10px;
@@ -189,6 +247,8 @@ button{color:inherit}
     padding:8px 11px;
     cursor:pointer;
     font-weight:800;
+    white-space:nowrap;
+    flex-shrink:0;
 }
 
 .power.ready{
@@ -203,31 +263,52 @@ button{color:inherit}
     box-shadow:0 0 22px #ff000077;
 }
 
+/* =========================
+   PAGES
+   ========================= */
+
 .page{
     display:none;
     flex:1;
+    min-width:0;
     min-height:0;
 }
 
-.page.active{display:flex}
+.page.active{
+    display:flex;
+}
 
-.chat-page{flex-direction:column}
+.chat-page{
+    flex-direction:column;
+    position:relative;
+}
+
+/* =========================
+   CHAT
+   ========================= */
 
 .chat-scroll{
     flex:1;
+    min-height:0;
+    min-width:0;
     overflow:auto;
     padding:30px 7%;
     scroll-behavior:smooth;
+    overscroll-behavior:contain;
+    -webkit-overflow-scrolling:touch;
 }
 
 .welcome{
-    height:100%;
+    min-height:100%;
     display:grid;
     place-items:center;
     text-align:center;
+    padding:30px 10px;
 }
 
-.welcome-inner{max-width:700px}
+.welcome-inner{
+    max-width:700px;
+}
 
 .welcome h1{
     font-size:38px;
@@ -243,6 +324,7 @@ button{color:inherit}
     display:flex;
     flex-direction:column;
     gap:14px;
+    width:100%;
     max-width:900px;
     margin:auto;
 }
@@ -251,28 +333,39 @@ button{color:inherit}
     display:flex;
     gap:10px;
     align-items:flex-start;
+    min-width:0;
+    width:100%;
 }
 
-.msg.user{justify-content:flex-end}
+.msg.user{
+    justify-content:flex-end;
+}
 
 .bubble{
     max-width:78%;
+    min-width:0;
     padding:12px 15px;
     border-radius:15px;
     background:#141821;
     line-height:1.5;
     white-space:pre-wrap;
     overflow-wrap:anywhere;
+    word-break:break-word;
 }
 
-.user .bubble{background:#5b36a8}
+.user .bubble{
+    background:#5b36a8;
+}
 
 .msg img{
     max-width:320px;
     max-height:320px;
+    width:auto;
+    height:auto;
     border-radius:12px;
     display:block;
     margin-top:8px;
+    object-fit:contain;
 }
 
 .msg video{
@@ -285,27 +378,43 @@ button{color:inherit}
     background:#000;
 }
 
+.video-title{
+    margin-bottom:8px;
+    font-weight:700;
+}
+
 .video-link{
-    display:inline-block;
+    display:block;
     margin-top:8px;
-    color:#c4b5fd;
+    color:#a78bfa;
     text-decoration:none;
-    font-size:13px;
+    overflow-wrap:anywhere;
 }
 
 .video-link:hover{
     text-decoration:underline;
 }
 
-.thinking{opacity:.7}
+.thinking{
+    opacity:.7;
+}
+
+/* =========================
+   COMPOSER
+   ========================= */
 
 .composer-wrap{
+    position:relative;
+    flex-shrink:0;
     padding:14px 7% 18px;
     border-top:1px solid var(--line);
     background:#0b0d12;
+    padding-bottom:max(18px,env(safe-area-inset-bottom));
+    z-index:30;
 }
 
 .composer{
+    width:100%;
     max-width:900px;
     margin:auto;
     border:1px solid #303542;
@@ -318,26 +427,40 @@ button{color:inherit}
     display:flex;
     gap:8px;
     flex-wrap:wrap;
+    min-width:0;
     margin-bottom:5px;
 }
 
 .chip{
+    max-width:100%;
+    min-width:0;
     font-size:12px;
     background:#1b1f29;
     border:1px solid #303542;
     border-radius:8px;
     padding:6px 8px;
     cursor:pointer;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
 }
 
 .composer-row{
     display:flex;
     gap:8px;
     align-items:flex-end;
+    min-width:0;
+    width:100%;
+}
+
+.composer-row > div{
+    flex-shrink:0;
 }
 
 textarea{
     flex:1;
+    min-width:0;
+    width:100%;
     resize:none;
     min-height:44px;
     max-height:180px;
@@ -347,15 +470,30 @@ textarea{
     color:var(--text);
     padding:9px;
     font-size:15px;
+    line-height:1.4;
+    overflow-y:auto;
 }
 
-.iconbtn,.sendbtn{
+textarea::placeholder{
+    color:#737a89;
+}
+
+.iconbtn,
+.sendbtn{
     width:42px;
+    min-width:42px;
     height:42px;
     border-radius:12px;
     border:1px solid var(--line);
     background:#171a22;
     cursor:pointer;
+    flex-shrink:0;
+}
+
+.iconbtn:active,
+.sendbtn:active,
+.power:active{
+    transform:scale(.96);
 }
 
 .sendbtn{
@@ -366,17 +504,20 @@ textarea{
 
 .plus-menu{
     position:absolute;
-    bottom:72px;
+    left:0;
+    bottom:50px;
     background:#11141b;
     border:1px solid var(--line);
     border-radius:13px;
     padding:7px;
     display:none;
     box-shadow:0 10px 35px #0008;
-    z-index:10;
+    z-index:100;
 }
 
-.plus-menu.open{display:block}
+.plus-menu.open{
+    display:block;
+}
 
 .plus-menu button{
     display:block;
@@ -389,19 +530,40 @@ textarea{
     cursor:pointer;
 }
 
-.plus-menu button:hover{background:#1b1f29}
+.plus-menu button:hover{
+    background:#1b1f29;
+}
 
-.hidden{display:none!important}
+/* =========================
+   MOBILE NAV
+   ========================= */
 
-.profile-page,.top-page{
+.mobile-nav{
+    display:none;
+}
+
+/* =========================
+   PROFILE / TOP
+   ========================= */
+
+.hidden{
+    display:none!important;
+}
+
+.profile-page,
+.top-page{
     padding:35px;
     overflow:auto;
     display:none;
     flex-direction:column;
     align-items:center;
+    min-width:0;
 }
 
-.profile-page.active,.top-page.active{display:flex}
+.profile-page.active,
+.top-page.active{
+    display:flex;
+}
 
 .card{
     width:min(760px,100%);
@@ -421,6 +583,7 @@ textarea{
 .bigavatar{
     width:75px;
     height:75px;
+    flex:0 0 75px;
     border-radius:50%;
     background:linear-gradient(135deg,#7c3aed,#2563eb);
     display:grid;
@@ -472,13 +635,24 @@ textarea{
 
 .top-row{
     display:grid;
-    grid-template-columns:50px 1fr 120px;
+    grid-template-columns:50px minmax(0,1fr) 120px;
     align-items:center;
+    gap:10px;
     background:var(--panel);
     border:1px solid var(--line);
     padding:14px;
     border-radius:12px;
 }
+
+.top-row span{
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+}
+
+/* =========================
+   MODAL
+   ========================= */
 
 .modal{
     position:fixed;
@@ -486,13 +660,16 @@ textarea{
     background:#0009;
     display:none;
     place-items:center;
-    z-index:20;
+    z-index:200;
+    padding:15px;
 }
 
-.modal.open{display:grid}
+.modal.open{
+    display:grid;
+}
 
 .modal-card{
-    width:min(430px,90%);
+    width:min(430px,100%);
     background:#11141b;
     border:1px solid var(--line);
     border-radius:18px;
@@ -514,19 +691,417 @@ textarea{
     cursor:pointer;
 }
 
-@media(max-width:800px){
-    .sidebar{width:220px}
-    .top-right .xpwrap{display:none}
-    .chat-scroll,.composer-wrap{
-        padding-left:3%;
-        padding-right:3%;
+/* =========================
+   TABLET
+   ========================= */
+
+@media(max-width:1000px){
+
+    .sidebar{
+        width:230px;
+        min-width:230px;
+    }
+
+    .chat-scroll{
+        padding-left:4%;
+        padding-right:4%;
+    }
+
+    .composer-wrap{
+        padding-left:4%;
+        padding-right:4%;
+    }
+
+    .xpwrap{
+        width:120px;
+    }
+
+    .top-right{
+        gap:9px;
     }
 }
 
-@media(max-width:600px){
-    .sidebar{display:none}
-    .bubble{max-width:90%}
-    .statgrid{grid-template-columns:1fr}
+/* =========================
+   PHONE
+   ========================= */
+
+@media(max-width:700px){
+
+    html,
+    body{
+        width:100%;
+        height:100%;
+        overflow:hidden;
+    }
+
+    .app{
+        width:100%;
+        height:100vh;
+        height:100dvh;
+        min-height:0;
+    }
+
+    .sidebar{
+        display:none;
+    }
+
+    .main{
+        width:100%;
+        height:100%;
+        min-width:0;
+        min-height:0;
+    }
+
+    .topbar{
+        height:54px;
+        min-height:54px;
+        width:100%;
+        padding:0 9px;
+        gap:6px;
+    }
+
+    .brand{
+        font-size:15px;
+        white-space:nowrap;
+    }
+
+    .status{
+        font-size:9px;
+        margin-left:3px;
+    }
+
+    .top-right{
+        gap:5px;
+        min-width:0;
+    }
+
+    .level{
+        font-size:10px;
+        white-space:nowrap;
+    }
+
+    .xpwrap{
+        display:none;
+    }
+
+    .power{
+        font-size:10px;
+        padding:7px 8px;
+        border-radius:9px;
+    }
+
+    .chat-page{
+        min-height:0;
+    }
+
+    .chat-scroll{
+        width:100%;
+        min-height:0;
+        padding:13px 8px 8px;
+        overflow-x:hidden;
+        overflow-y:auto;
+    }
+
+    .welcome{
+        min-height:100%;
+        padding:20px 10px;
+    }
+
+    .welcome-inner{
+        width:100%;
+        max-width:500px;
+    }
+
+    .welcome h1{
+        font-size:27px;
+        line-height:1.15;
+        margin-bottom:9px;
+    }
+
+    .welcome p{
+        font-size:13px;
+        line-height:1.45;
+        margin:0;
+    }
+
+    .messages{
+        width:100%;
+        max-width:none;
+        gap:10px;
+    }
+
+    .msg{
+        width:100%;
+        max-width:100%;
+        gap:5px;
+    }
+
+    .bubble{
+        max-width:90%;
+        padding:10px 12px;
+        border-radius:13px;
+        font-size:14px;
+        line-height:1.45;
+    }
+
+    .msg img{
+        max-width:100%;
+        width:auto;
+        height:auto;
+        max-height:260px;
+    }
+
+    .msg video{
+        width:100%;
+        max-width:100%;
+        max-height:330px;
+    }
+
+    /* Composer is above mobile navigation */
+    .composer-wrap{
+        width:100%;
+        padding:7px 7px 66px;
+        padding-bottom:calc(66px + env(safe-area-inset-bottom));
+    }
+
+    .composer{
+        width:100%;
+        max-width:none;
+        padding:6px;
+        border-radius:14px;
+    }
+
+    .attachments{
+        max-width:100%;
+        margin-bottom:4px;
+        gap:5px;
+    }
+
+    .chip{
+        max-width:calc(100vw - 25px);
+        font-size:11px;
+        padding:5px 7px;
+    }
+
+    .composer-row{
+        width:100%;
+        gap:5px;
+        align-items:flex-end;
+    }
+
+    textarea{
+        min-width:0;
+        width:100%;
+        min-height:40px;
+        max-height:120px;
+        padding:8px 5px;
+        font-size:15px;
+        line-height:1.35;
+    }
+
+    .iconbtn,
+    .sendbtn{
+        width:40px;
+        min-width:40px;
+        height:40px;
+        border-radius:11px;
+    }
+
+    .plus-menu{
+        left:0;
+        bottom:48px;
+        max-width:calc(100vw - 18px);
+    }
+
+    .plus-menu button{
+        width:180px;
+        padding:10px;
+    }
+
+    /* Bottom mobile navigation */
+    .mobile-nav{
+        position:fixed;
+        left:0;
+        right:0;
+        bottom:0;
+        height:58px;
+        padding:5px 7px max(5px,env(safe-area-inset-bottom));
+        background:#0d0f14;
+        border-top:1px solid var(--line);
+        display:grid;
+        grid-template-columns:repeat(3,1fr);
+        gap:5px;
+        z-index:80;
+    }
+
+    .mobile-nav button{
+        min-width:0;
+        border:1px solid transparent;
+        background:transparent;
+        border-radius:10px;
+        color:#8f96a5;
+        font-size:11px;
+        cursor:pointer;
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        justify-content:center;
+        gap:2px;
+    }
+
+    .mobile-nav button:active{
+        background:#171a22;
+    }
+
+    .mobile-nav button.active{
+        color:#c4a7ff;
+        background:#171323;
+        border-color:#302448;
+    }
+
+    .mobile-nav-icon{
+        font-size:17px;
+        line-height:18px;
+    }
+
+    .profile-page,
+    .top-page{
+        width:100%;
+        padding:12px 8px 70px;
+        overflow:auto;
+    }
+
+    .card{
+        width:100%;
+        padding:16px;
+        border-radius:14px;
+    }
+
+    .profile-head{
+        gap:12px;
+        margin-bottom:18px;
+    }
+
+    .bigavatar{
+        width:58px;
+        height:58px;
+        flex:0 0 58px;
+        font-size:20px;
+    }
+
+    .profile-head h2{
+        font-size:20px;
+    }
+
+    .statgrid{
+        grid-template-columns:1fr;
+        gap:8px;
+    }
+
+    .stat{
+        padding:12px;
+    }
+
+    .top-list{
+        width:100%;
+        padding-bottom:10px;
+    }
+
+    .top-list h2{
+        font-size:20px;
+    }
+
+    .top-row{
+        grid-template-columns:34px minmax(0,1fr) auto;
+        padding:11px;
+        gap:8px;
+        font-size:13px;
+    }
+
+    .modal{
+        padding:10px;
+    }
+
+    .modal-card{
+        padding:18px;
+        border-radius:15px;
+        max-height:90dvh;
+        overflow:auto;
+    }
+}
+
+/* =========================
+   VERY SMALL PHONE
+   ========================= */
+
+@media(max-width:420px){
+
+    .topbar{
+        padding:0 7px;
+    }
+
+    .brand{
+        font-size:14px;
+    }
+
+    .status{
+        display:none;
+    }
+
+    .level{
+        font-size:9px;
+    }
+
+    .power{
+        font-size:9px;
+        padding:6px 7px;
+    }
+
+    .welcome h1{
+        font-size:24px;
+    }
+
+    .welcome p{
+        font-size:12px;
+    }
+
+    .bubble{
+        max-width:93%;
+        font-size:14px;
+    }
+
+    .composer{
+        padding:5px;
+    }
+
+    .iconbtn,
+    .sendbtn{
+        width:38px;
+        min-width:38px;
+        height:38px;
+        border-radius:10px;
+    }
+
+    textarea{
+        font-size:14px;
+        min-height:38px;
+    }
+
+    .plus-menu button{
+        width:170px;
+    }
+
+    .mobile-nav{
+        height:56px;
+    }
+
+    .mobile-nav button{
+        font-size:10px;
+    }
+
+    .mobile-nav-icon{
+        font-size:16px;
+    }
 }
 </style>
 </head>
@@ -712,6 +1287,27 @@ LVL 1 • ROOKIE
 
 </section>
 
+<!-- PHONE NAVIGATION -->
+
+<nav class="mobile-nav">
+
+<button id="mobileChatBtn" class="active" onclick="showPage('chat')">
+<span class="mobile-nav-icon">💬</span>
+<span>Чат</span>
+</button>
+
+<button id="mobileTopBtn" onclick="showPage('top')">
+<span class="mobile-nav-icon">🏆</span>
+<span>TOP</span>
+</button>
+
+<button id="mobileProfileBtn" onclick="showPage('profile')">
+<span class="mobile-nav-icon">👤</span>
+<span>Профіль</span>
+</button>
+
+</nav>
+
 </main>
 </div>
 
@@ -743,7 +1339,7 @@ Prestige +1.
 
 <script>
 
-const API_URL = window.location.origin;
+const API_URL = "https://kostiuk.onrender.com";
 
 let data =
     JSON.parse(localStorage.getItem("kostiuk_data") || "null") ||
@@ -924,6 +1520,33 @@ function activatePower(){
     },20000);
 }
 
+function updateMobileNav(page){
+
+    const chatBtn =
+        document.getElementById("mobileChatBtn");
+
+    const topBtn =
+        document.getElementById("mobileTopBtn");
+
+    const profileBtn =
+        document.getElementById("mobileProfileBtn");
+
+    [chatBtn,topBtn,profileBtn]
+        .forEach(btn => btn?.classList.remove("active"));
+
+    if(page === "chat"){
+        chatBtn?.classList.add("active");
+    }
+
+    if(page === "top"){
+        topBtn?.classList.add("active");
+    }
+
+    if(page === "profile"){
+        profileBtn?.classList.add("active");
+    }
+}
+
 function showPage(page){
 
     document
@@ -948,7 +1571,10 @@ function showPage(page){
             .getElementById("chatPage")
             .classList.add("active");
 
+        setTimeout(scrollBottom,30);
     }
+
+    updateMobileNav(page);
 }
 
 function togglePlus(){
@@ -1140,7 +1766,8 @@ function addMessage(role,text,image,video){
         const textNode =
             document.createElement("div");
 
-        textNode.textContent = text;
+        textNode.innerHTML =
+            escapeHTML(text);
 
         bubble.appendChild(textNode);
     }
@@ -1157,6 +1784,12 @@ function addMessage(role,text,image,video){
 
     if(video){
 
+        const title =
+            document.createElement("div");
+
+        title.className = "video-title";
+        title.textContent = "🎬 Відео готове!";
+
         const videoElement =
             document.createElement("video");
 
@@ -1165,8 +1798,6 @@ function addMessage(role,text,image,video){
         videoElement.preload = "metadata";
         videoElement.src = video;
 
-        bubble.appendChild(videoElement);
-
         const link =
             document.createElement("a");
 
@@ -1174,8 +1805,10 @@ function addMessage(role,text,image,video){
         link.href = video;
         link.target = "_blank";
         link.rel = "noopener noreferrer";
-        link.textContent = "↗ Відкрити відео окремо";
+        link.textContent = "Відкрити відео окремо";
 
+        bubble.appendChild(title);
+        bubble.appendChild(videoElement);
         bubble.appendChild(link);
     }
 
@@ -1194,7 +1827,7 @@ function addMessage(role,text,image,video){
     return wrap;
 }
 
-function addThinking(text="Kostiuk думає..."){
+function addThinking(){
 
     const wrap =
         document.createElement("div");
@@ -1206,7 +1839,7 @@ function addThinking(text="Kostiuk думає..."){
         document.createElement("div");
 
     bubble.className = "bubble thinking";
-    bubble.textContent = text;
+    bubble.textContent = "Kostiuk думає...";
 
     wrap.appendChild(bubble);
 
@@ -1234,10 +1867,9 @@ function buildHistoryForAPI(){
 
     return currentChat
         .slice(-20)
-        .filter(m => m.content)
         .map(m => ({
             role:m.role,
-            content:m.content
+            content:String(m.content || "")
         }));
 }
 
@@ -1288,6 +1920,7 @@ async function sendMessage(){
     });
 
     input.value = "";
+    input.style.height = "auto";
 
     pendingImage = null;
     pendingFile = null;
@@ -1298,6 +1931,9 @@ async function sendMessage(){
     addPowerCharge();
 
     addThinking();
+
+    const thinking =
+        document.getElementById("thinking");
 
     try{
 
@@ -1328,9 +1964,7 @@ async function sendMessage(){
         const result =
             await response.json();
 
-        document
-            .getElementById("thinking")
-            ?.remove();
+        thinking?.remove();
 
         if(!response.ok){
 
@@ -1340,7 +1974,7 @@ async function sendMessage(){
         }
 
         let reply =
-            result.reply || "Порожня відповідь.";
+            result.reply || "";
 
         if(usePower){
 
@@ -1351,21 +1985,26 @@ async function sendMessage(){
 
         addMessage(
             "assistant",
-            reply
+            reply || null,
+            null,
+            result.video || null
         );
 
         currentChat.push({
             role:"assistant",
-            content:reply
+            content:
+                reply ||
+                (result.video
+                    ? "🎬 Відео готове!"
+                    : "Порожня відповідь."),
+            video:result.video || null
         });
 
         saveCurrentChat();
 
     }catch(error){
 
-        document
-            .getElementById("thinking")
-            ?.remove();
+        thinking?.remove();
 
         addMessage(
             "assistant",
@@ -1374,144 +2013,6 @@ async function sendMessage(){
         );
 
         console.error(error);
-
-    }finally{
-
-        isSending = false;
-    }
-}
-
-async function generateVideo(){
-
-    document
-        .getElementById("plusMenu")
-        .classList.remove("open");
-
-    if(isSending) return;
-
-    if(!pendingImage){
-
-        alert(
-            "🎬 Для відеогенерації спочатку прикріпи зображення."
-        );
-
-        return;
-    }
-
-    const input =
-        document.getElementById("input");
-
-    const prompt =
-        input.value.trim();
-
-    if(!prompt){
-
-        alert(
-            "🎬 Напиши опис того, що має відбуватися у відео."
-        );
-
-        return;
-    }
-
-    isSending = true;
-
-    const sentImage = pendingImage.data;
-    const visiblePrompt = prompt;
-
-    addMessage(
-        "user",
-        visiblePrompt,
-        sentImage
-    );
-
-    currentChat.push({
-        role:"user",
-        content:visiblePrompt
-    });
-
-    input.value = "";
-    input.style.height = "auto";
-
-    pendingImage = null;
-    pendingFile = null;
-
-    renderAttachments();
-
-    addMessageXP();
-    addPowerCharge();
-
-    addThinking("🎬 Kostiuk генерує відео...");
-
-    try{
-
-        const response =
-            await fetch(
-                API_URL + "/video",
-                {
-                    method:"POST",
-
-                    headers:{
-                        "Content-Type":"application/json"
-                    },
-
-                    body:JSON.stringify({
-                        image:sentImage,
-                        prompt:prompt
-                    })
-                }
-            );
-
-        const result =
-            await response.json();
-
-        document
-            .getElementById("thinking")
-            ?.remove();
-
-        if(!response.ok){
-
-            throw new Error(
-                result.details ||
-                result.error ||
-                "Помилка генерації відео"
-            );
-        }
-
-        if(!result.video){
-
-            throw new Error(
-                "Backend не повернув відео."
-            );
-        }
-
-        addMessage(
-            "assistant",
-            "🎬 Готово. Ось твоє відео:",
-            null,
-            result.video
-        );
-
-        currentChat.push({
-            role:"assistant",
-            content:"🎬 Готове відео",
-            video:result.video
-        });
-
-        saveCurrentChat();
-
-    }catch(error){
-
-        document
-            .getElementById("thinking")
-            ?.remove();
-
-        addMessage(
-            "assistant",
-            "❌ Не вдалося створити відео.\n\n" +
-            error.message
-        );
-
-        console.error("VIDEO ERROR:",error);
 
     }finally{
 
@@ -1536,6 +2037,7 @@ function saveCurrentChat(){
                 || "Новий чат",
 
             messages:currentChat
+
         });
 
     }else{
@@ -1626,6 +2128,10 @@ function newChat(){
         .getElementById("input")
         .value = "";
 
+    document
+        .getElementById("input")
+        .style.height = "auto";
+
     renderAttachments();
 
     showPage("chat");
@@ -1677,9 +2183,173 @@ function voiceInput(){
             .getElementById("input")
             .value =
             e.results[0][0].transcript;
+
+        document
+            .getElementById("input")
+            .dispatchEvent(new Event("input"));
     };
 
     recognition.start();
+}
+
+async function generateVideo(){
+
+    document
+        .getElementById("plusMenu")
+        .classList.remove("open");
+
+    if(isSending) return;
+
+    if(!pendingImage){
+
+        alert(
+            "🖼️ Спочатку прикріпи зображення для відео."
+        );
+
+        return;
+    }
+
+    const input =
+        document.getElementById("input");
+
+    const prompt =
+        input.value.trim();
+
+    if(!prompt){
+
+        alert(
+            "🎬 Напиши опис того, що має відбуватися у відео."
+        );
+
+        input.focus();
+
+        return;
+    }
+
+    isSending = true;
+
+    const sentImage =
+        pendingImage.data;
+
+    const visibleText =
+        prompt;
+
+    addMessage(
+        "user",
+        visibleText,
+        sentImage
+    );
+
+    currentChat.push({
+        role:"user",
+        content:visibleText
+    });
+
+    input.value = "";
+    input.style.height = "auto";
+
+    pendingImage = null;
+    pendingFile = null;
+
+    renderAttachments();
+
+    addMessageXP();
+    addPowerCharge();
+
+    addThinking();
+
+    const thinking =
+        document.getElementById("thinking");
+
+    if(thinking){
+
+        const bubble =
+            thinking.querySelector(".bubble");
+
+        if(bubble){
+
+            bubble.textContent =
+                "🎬 Kostiuk генерує відео...";
+        }
+    }
+
+    try{
+
+        const response =
+            await fetch(
+                API_URL + "/video",
+                {
+                    method:"POST",
+
+                    headers:{
+                        "Content-Type":"application/json"
+                    },
+
+                    body:JSON.stringify({
+
+                        image:sentImage,
+
+                        prompt:prompt
+
+                    })
+                }
+            );
+
+        const result =
+            await response.json();
+
+        thinking?.remove();
+
+        if(!response.ok){
+
+            throw new Error(
+                result.details ||
+                result.error ||
+                "Помилка генерації відео."
+            );
+        }
+
+        if(!result.video){
+
+            throw new Error(
+                "Backend не повернув відео."
+            );
+        }
+
+        addMessage(
+            "assistant",
+            null,
+            null,
+            result.video
+        );
+
+        currentChat.push({
+            role:"assistant",
+            content:"🎬 Відео готове!",
+            video:result.video
+        });
+
+        saveCurrentChat();
+
+    }catch(error){
+
+        thinking?.remove();
+
+        addMessage(
+            "assistant",
+            "❌ Не вдалося створити відео.\n\n" +
+            error.message
+        );
+
+        console.error(
+            "VIDEO ERROR:",
+            error
+        );
+
+    }finally{
+
+        isSending = false;
+    }
 }
 
 function openPrestige(){
@@ -1739,7 +2409,7 @@ document
         this.style.height =
             Math.min(
                 this.scrollHeight,
-                180
+                window.innerWidth <= 700 ? 120 : 180
             ) + "px";
     });
 
@@ -1749,4 +2419,3 @@ updateUI();
 
 </body>
 </html>
-```
