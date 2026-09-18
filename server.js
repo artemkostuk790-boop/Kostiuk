@@ -3,6 +3,7 @@ require("dotenv").config();
 const http = require("http");
 const fs = require("fs");
 const path = require("path");
+const crypto = require("crypto");
 const OpenAI = require("openai");
 const { Client, handle_file } = require("@gradio/client");
 
@@ -13,6 +14,43 @@ const openai = new OpenAI({
 const PORT = process.env.PORT || 3000;
 
 const HF_SPACE = "zerogpu-aoti/wan2-2-fp8da-aoti-faster";
+
+/*
+========================================================
+🎬 GENERATED VIDEO STORAGE
+========================================================
+*/
+
+const videoStore = new Map();
+
+const VIDEO_TTL = 30 * 60 * 1000;
+
+function saveGeneratedVideo(buffer) {
+  const id = crypto.randomUUID();
+
+  videoStore.set(id, {
+    buffer,
+    createdAt: Date.now()
+  });
+
+  setTimeout(() => {
+    videoStore.delete(id);
+  }, VIDEO_TTL);
+
+  return id;
+}
+
+function cleanupVideos() {
+  const now = Date.now();
+
+  for (const [id, video] of videoStore.entries()) {
+    if (now - video.createdAt > VIDEO_TTL) {
+      videoStore.delete(id);
+    }
+  }
+}
+
+setInterval(cleanupVideos, 5 * 60 * 1000);
 
 const KOSTIUK_INSTRUCTIONS = `
 Ти — Kostiuk AI, дружній сучасний AI-асистент.
@@ -181,8 +219,6 @@ async function generateVideoWithWan(image, prompt) {
     videoUrl = output;
   } else if (output.url) {
     videoUrl = output.url;
-  } else if (output.path) {
-    videoUrl = output.path;
   }
 
   if (!videoUrl) {
@@ -191,9 +227,60 @@ async function generateVideoWithWan(image, prompt) {
     );
   }
 
-  console.log("🎬 Video URL:", videoUrl);
+  console.log("🎬 HF Video URL:", videoUrl);
 
-  return videoUrl;
+  /*
+  ======================================================
+  🔥 ВАЖЛИВО:
+  Завантажуємо відео з HF на backend.
+  Не передаємо /tmp/gradio шлях браузеру.
+  ======================================================
+  */
+
+  console.log("🎬 Завантажую MP4 з Hugging Face...");
+
+  const videoResponse = await fetch(videoUrl);
+
+  if (!videoResponse.ok) {
+    throw new Error(
+      `Не вдалося завантажити відео з Hugging Face: ${videoResponse.status}`
+    );
+  }
+
+  const arrayBuffer = await videoResponse.arrayBuffer();
+  const videoBuffer = Buffer.from(arrayBuffer);
+
+  if (!videoBuffer.length) {
+    throw new Error(
+      "Hugging Face повернув порожній відеофайл."
+    );
+  }
+
+  console.log(
+    "🎬 MP4 завантажено:",
+    Math.round(videoBuffer.length / 1024 / 1024 * 100) / 100,
+    "MB"
+  );
+
+  /*
+  Зберігаємо відео в пам'яті backend.
+  */
+
+  const videoId = saveGeneratedVideo(videoBuffer);
+
+  /*
+  Власний URL Kostiuk.
+  */
+
+  const localVideoUrl =
+    `/generated-video/${videoId}`;
+
+  console.log(
+    "🎬 Kostiuk Video URL:",
+    localVideoUrl
+  );
+
+  return localVideoUrl;
 }
 
 /*
@@ -218,6 +305,132 @@ const server = http.createServer(async (req, res) => {
     });
 
     res.end();
+    return;
+  }
+
+  /*
+  =========================
+  🎬 GENERATED VIDEO
+  =========================
+  */
+
+  if (
+    req.method === "GET" &&
+    req.url.startsWith("/generated-video/")
+  ) {
+
+    try {
+
+      const videoId =
+        req.url.split("/generated-video/")[1].split("?")[0];
+
+      const video =
+        videoStore.get(videoId);
+
+      if (!video) {
+
+        sendJson(res, 404, {
+          error: "Відео більше недоступне."
+        });
+
+        return;
+      }
+
+      const buffer = video.buffer;
+      const total = buffer.length;
+
+      /*
+      Підтримка Range для нормального HTML5 video.
+      */
+
+      const range =
+        req.headers.range;
+
+      if (range) {
+
+        const match =
+          range.match(/bytes=(\d+)-(\d*)/);
+
+        if (match) {
+
+          const start =
+            Number(match[1]);
+
+          const requestedEnd =
+            match[2]
+              ? Number(match[2])
+              : total - 1;
+
+          const end =
+            Math.min(
+              requestedEnd,
+              total - 1
+            );
+
+          if (
+            start >= total ||
+            start > end
+          ) {
+
+            res.writeHead(416, {
+              "Content-Range":
+                `bytes */${total}`
+            });
+
+            res.end();
+
+            return;
+          }
+
+          const chunk =
+            buffer.subarray(
+              start,
+              end + 1
+            );
+
+          res.writeHead(206, {
+            "Content-Type": "video/mp4",
+            "Content-Length": chunk.length,
+            "Content-Range":
+              `bytes ${start}-${end}/${total}`,
+            "Accept-Ranges": "bytes",
+            "Cache-Control": "no-cache",
+            "Access-Control-Allow-Origin": "*"
+          });
+
+          res.end(chunk);
+
+          return;
+        }
+      }
+
+      /*
+      Якщо браузер не використав Range —
+      віддаємо весь MP4.
+      */
+
+      res.writeHead(200, {
+        "Content-Type": "video/mp4",
+        "Content-Length": total,
+        "Accept-Ranges": "bytes",
+        "Cache-Control": "no-cache",
+        "Access-Control-Allow-Origin": "*"
+      });
+
+      res.end(buffer);
+
+    } catch (error) {
+
+      console.error(
+        "🎬 Generated video error:",
+        error
+      );
+
+      sendJson(res, 500, {
+        error: "Помилка віддачі відео."
+      });
+    }
+
     return;
   }
 
@@ -419,11 +632,6 @@ const server = http.createServer(async (req, res) => {
 
       if (toolCalls.length > 0) {
 
-        /*
-        Додаємо output моделі назад у conversation,
-        щоб Responses API знав, який tool був викликаний.
-        */
-
         input.push(...response.output);
 
         for (const toolCall of toolCalls) {
@@ -447,11 +655,6 @@ const server = http.createServer(async (req, res) => {
 
             args = {};
           }
-
-          /*
-          Якщо немає картинки —
-          відеогенерацію не запускаємо.
-          */
 
           if (!image) {
 
@@ -518,7 +721,7 @@ const server = http.createServer(async (req, res) => {
 
         /*
         Другий запит:
-        AI отримує результат tool і формує відповідь.
+        AI отримує результат tool.
         */
 
         response =
@@ -539,14 +742,9 @@ const server = http.createServer(async (req, res) => {
           });
       }
 
-      let reply =
+      const reply =
         response.output_text ||
         "Я не зміг сформувати відповідь.";
-
-      /*
-      Якщо відео створене —
-      передаємо його фронтенду окремо.
-      */
 
       sendJson(res, 200, {
 
