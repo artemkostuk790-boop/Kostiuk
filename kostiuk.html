@@ -1,5 +1,5 @@
+```html
 <!DOCTYPE html>
-
 <html lang="uk">
 <head>
 <meta charset="UTF-8">
@@ -275,6 +275,28 @@ button{color:inherit}
     margin-top:8px;
 }
 
+.msg video{
+    max-width:650px;
+    width:100%;
+    max-height:500px;
+    border-radius:12px;
+    display:block;
+    margin-top:8px;
+    background:#000;
+}
+
+.video-link{
+    display:inline-block;
+    margin-top:8px;
+    color:#c4b5fd;
+    text-decoration:none;
+    font-size:13px;
+}
+
+.video-link:hover{
+    text-decoration:underline;
+}
+
 .thinking{opacity:.7}
 
 .composer-wrap{
@@ -507,7 +529,6 @@ textarea{
     .statgrid{grid-template-columns:1fr}
 }
 </style>
-
 </head>
 
 <body>
@@ -592,7 +613,10 @@ textarea{
 
 <div class="plus-menu" id="plusMenu">
 
-<button onclick="pickImage()">🖼️ Зображення</button> <button onclick="pickFile()">📎 Файл</button> <button onclick="voiceInput()">🎙️ Голос</button> <button onclick="generateVideo()">🎬 Відео</button>
+<button onclick="pickImage()">🖼️ Зображення</button>
+<button onclick="pickFile()">📎 Файл</button>
+<button onclick="voiceInput()">🎙️ Голос</button>
+<button onclick="generateVideo()">🎬 Відео</button>
 
 </div>
 
@@ -708,7 +732,8 @@ Prestige +1.
 
 <div class="modal-actions">
 
-<button onclick="closePrestige()">Скасувати</button> <button onclick="confirmPrestige()">Підтвердити</button>
+<button onclick="closePrestige()">Скасувати</button>
+<button onclick="confirmPrestige()">Підтвердити</button>
 
 </div>
 
@@ -718,7 +743,7 @@ Prestige +1.
 
 <script>
 
-const API_URL = "https://kostiuk.onrender.com";
+const API_URL = window.location.origin;
 
 let data =
     JSON.parse(localStorage.getItem("kostiuk_data") || "null") ||
@@ -1097,7 +1122,7 @@ function escapeHTML(s){
     );
 }
 
-function addMessage(role,text,image){
+function addMessage(role,text,image,video){
 
     const wrap =
         document.createElement("div");
@@ -1111,7 +1136,13 @@ function addMessage(role,text,image){
     bubble.className = "bubble";
 
     if(text){
-        bubble.innerHTML = escapeHTML(text);
+
+        const textNode =
+            document.createElement("div");
+
+        textNode.textContent = text;
+
+        bubble.appendChild(textNode);
     }
 
     if(image){
@@ -1122,6 +1153,30 @@ function addMessage(role,text,image){
         img.src = image;
 
         bubble.appendChild(img);
+    }
+
+    if(video){
+
+        const videoElement =
+            document.createElement("video");
+
+        videoElement.controls = true;
+        videoElement.playsInline = true;
+        videoElement.preload = "metadata";
+        videoElement.src = video;
+
+        bubble.appendChild(videoElement);
+
+        const link =
+            document.createElement("a");
+
+        link.className = "video-link";
+        link.href = video;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        link.textContent = "↗ Відкрити відео окремо";
+
+        bubble.appendChild(link);
     }
 
     wrap.appendChild(bubble);
@@ -1139,7 +1194,7 @@ function addMessage(role,text,image){
     return wrap;
 }
 
-function addThinking(){
+function addThinking(text="Kostiuk думає..."){
 
     const wrap =
         document.createElement("div");
@@ -1151,7 +1206,7 @@ function addThinking(){
         document.createElement("div");
 
     bubble.className = "bubble thinking";
-    bubble.textContent = "Kostiuk думає...";
+    bubble.textContent = text;
 
     wrap.appendChild(bubble);
 
@@ -1179,6 +1234,7 @@ function buildHistoryForAPI(){
 
     return currentChat
         .slice(-20)
+        .filter(m => m.content)
         .map(m => ({
             role:m.role,
             content:m.content
@@ -1325,6 +1381,144 @@ async function sendMessage(){
     }
 }
 
+async function generateVideo(){
+
+    document
+        .getElementById("plusMenu")
+        .classList.remove("open");
+
+    if(isSending) return;
+
+    if(!pendingImage){
+
+        alert(
+            "🎬 Для відеогенерації спочатку прикріпи зображення."
+        );
+
+        return;
+    }
+
+    const input =
+        document.getElementById("input");
+
+    const prompt =
+        input.value.trim();
+
+    if(!prompt){
+
+        alert(
+            "🎬 Напиши опис того, що має відбуватися у відео."
+        );
+
+        return;
+    }
+
+    isSending = true;
+
+    const sentImage = pendingImage.data;
+    const visiblePrompt = prompt;
+
+    addMessage(
+        "user",
+        visiblePrompt,
+        sentImage
+    );
+
+    currentChat.push({
+        role:"user",
+        content:visiblePrompt
+    });
+
+    input.value = "";
+    input.style.height = "auto";
+
+    pendingImage = null;
+    pendingFile = null;
+
+    renderAttachments();
+
+    addMessageXP();
+    addPowerCharge();
+
+    addThinking("🎬 Kostiuk генерує відео...");
+
+    try{
+
+        const response =
+            await fetch(
+                API_URL + "/video",
+                {
+                    method:"POST",
+
+                    headers:{
+                        "Content-Type":"application/json"
+                    },
+
+                    body:JSON.stringify({
+                        image:sentImage,
+                        prompt:prompt
+                    })
+                }
+            );
+
+        const result =
+            await response.json();
+
+        document
+            .getElementById("thinking")
+            ?.remove();
+
+        if(!response.ok){
+
+            throw new Error(
+                result.details ||
+                result.error ||
+                "Помилка генерації відео"
+            );
+        }
+
+        if(!result.video){
+
+            throw new Error(
+                "Backend не повернув відео."
+            );
+        }
+
+        addMessage(
+            "assistant",
+            "🎬 Готово. Ось твоє відео:",
+            null,
+            result.video
+        );
+
+        currentChat.push({
+            role:"assistant",
+            content:"🎬 Готове відео",
+            video:result.video
+        });
+
+        saveCurrentChat();
+
+    }catch(error){
+
+        document
+            .getElementById("thinking")
+            ?.remove();
+
+        addMessage(
+            "assistant",
+            "❌ Не вдалося створити відео.\n\n" +
+            error.message
+        );
+
+        console.error("VIDEO ERROR:",error);
+
+    }finally{
+
+        isSending = false;
+    }
+}
+
 function saveCurrentChat(){
 
     if(!currentChat.length) return;
@@ -1402,12 +1596,16 @@ function loadChat(chat){
             currentChat.length > 0
         );
 
-    currentChat.forEach(
-        m => addMessage(
+    currentChat.forEach(m => {
+
+        addMessage(
             m.role,
-            m.content
-        )
-    );
+            m.content,
+            m.image || null,
+            m.video || null
+        );
+
+    });
 }
 
 function newChat(){
@@ -1484,17 +1682,6 @@ function voiceInput(){
     recognition.start();
 }
 
-function generateVideo(){
-
-    document
-        .getElementById("plusMenu")
-        .classList.remove("open");
-
-    alert(
-        "🎬 Відеогенерація ще не підключена."
-    );
-}
-
 function openPrestige(){
 
     if(data.level >= 100){
@@ -1562,3 +1749,4 @@ updateUI();
 
 </body>
 </html>
+```
